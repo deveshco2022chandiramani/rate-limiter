@@ -1,8 +1,9 @@
 package com.ratelimiter.server.networking;
 
 import com.ratelimiter.server.config.ServerConfig;
+import com.ratelimiter.server.pipeline.Pipeline;
 import com.ratelimiter.server.pipeline.RequestProcessor;
-import com.ratelimiter.shared.model.Response;
+import com.ratelimiter.server.store.RequestLog;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,8 +19,13 @@ public final class Server implements AutoCloseable {
     private final RequestProcessor handler;
     private final ServerSocket serverSocket;
 
+    // Shutdown flag - written by stop() on one thread, read by acceptLoop() on another
     private final AtomicBoolean running = new AtomicBoolean(false);
+
+    // How many client handler threads are currently alive
     private final AtomicInteger activeConnections = new AtomicInteger(0);
+
+    // Monotonically increasing ID for thread naming; AtomicLong so the lambda can capture an effectively-final snapshot
     private final AtomicLong totalConnectionCount = new AtomicLong(0);
 
     private Server(ServerConfig config, RequestProcessor handler) throws IOException {
@@ -29,8 +35,12 @@ public final class Server implements AutoCloseable {
         this.serverSocket.setSoTimeout(1_000);
     }
 
+    public Server(ServerConfig config, RequestLog store) throws IOException {
+        this(config, Pipeline.build(config, store));
+    }
+
     public static Server create(ServerConfig config) throws IOException {
-        return new Server(config, req -> Response.ok(req.requestId(), "<stub for " + req.requestType() + ">"));
+        return new Server(config, new RequestLog());
     }
 
     public void start() {
