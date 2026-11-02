@@ -10,7 +10,6 @@ final class RequestHandler implements RequestProcessor {
 
     private final RateLimiter rateLimiter;
 
-    RequestHandler() { this.rateLimiter = null; }
     RequestHandler(RateLimiter rateLimiter) {
         this.rateLimiter = rateLimiter;
     }
