@@ -57,7 +57,7 @@ public final class AnalyticsService {
             .collect(Collectors.toMap(
                 Map.Entry::getKey,
                 Map.Entry::getValue,
-                (a, b) -> a,   // unreachable - keys are unique after groupingBy
+                (a, b) -> a,
                 LinkedHashMap::new));
     }
 }
