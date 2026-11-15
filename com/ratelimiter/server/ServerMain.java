@@ -1,8 +1,24 @@
 package com.ratelimiter.server;
 
-public class ServerMain {
+import com.ratelimiter.server.config.ServerConfig;
+import com.ratelimiter.server.networking.Server;
 
-    public static void main(String[] args) {
-        System.out.println("Hello World");
+import java.io.IOException;
+
+/** Composition root: builds config, creates and starts the server. */
+public final class ServerMain {
+
+    private ServerMain() {}
+
+    public static void main(String[] args) throws IOException {
+        ServerConfig config = ServerConfig.builder()
+            .port(9090)
+            .maxRequestsPerWindow(10)
+            .windowMs(1_000)
+            .socketTimeoutMs(30_000)
+            .serverRunDurationMs(60_000L)
+            .build();
+
+        Server.create(config).start();
     }
 }
